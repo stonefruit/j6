@@ -28,11 +28,6 @@ export default function ChordSets() {
     });
   }, [searchNumber, selectedGenre]);
 
-  const clearFilters = () => {
-    setSearchNumber("");
-    setSelectedGenre("");
-  };
-
   return (
     <div className="chord-sets-container">
       <header className="app-header">

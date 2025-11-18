@@ -30,7 +30,7 @@ export default function TriggerKey({ noteIndex }: TriggerKeyProps) {
 
         {/* White keys row */}
         <div className="trigger-keyboard-row trigger-white-keys-row">
-          {WHITE_KEYS.map((key, idx) => (
+          {WHITE_KEYS.map((key) => (
             <>
               <div
                 key={`white-${key}`}
