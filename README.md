@@ -1,73 +1,123 @@
-# React + TypeScript + Vite
+# J-6 Chord Sets
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A mobile-first web app for browsing and exploring Roland AIRA Compact J-6 chord progressions. Designed to be a quick reference guide while using the J-6, replacing the need to flip through the manual.
 
-Currently, two official plugins are available:
+**Live Demo:** [View on GitHub Pages](https://stonefruit.github.io/j6/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Why This Exists
 
-## React Compiler
+The Roland J-6 comes with 100 pre-programmed chord sets spanning various genres, but finding the right one means scrolling through the device or checking the manual. This app makes it easy to:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Browse all 100 chord sets instantly
+- Filter by chord set number or genre
+- See the exact notes and chord progressions
+- Visualize chords on a keyboard display
+- Use on your phone while playing the J-6
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Mobile-First Design** - Optimized for phone screens so you can reference it while using your J-6
+- **Search & Filter** - Find chord sets by number or filter by genre
+- **Visual Chord Display** - See chord notes on a keyboard visualization
+- **Genre Organization** - Browse by musical style (House, Techno, R&B, Jazz, etc.)
+- **Expandable Cards** - Tap to reveal full chord progressions and note details
+- **Responsive Layout** - Works on phones, tablets, and desktop
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (v18 or higher recommended)
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/stonefruit/j6.git
+
+# Navigate to the project directory
+cd j6
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The app will be available at `http://localhost:5173/j6/`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Building for Production
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+The built files will be in the `dist` directory.
+
+## Usage
+
+1. **Search by Number** - Enter a chord set number (1-100) to jump directly to it
+2. **Filter by Genre** - Use the dropdown to see all chord sets in a specific genre
+3. **Expand a Card** - Click/tap any chord set card to see the full progression
+4. **View Chord Details** - See the chord name, key, notes, and keyboard visualization
+
+## Data Accuracy
+
+The chord data in this app has been manually transcribed and may contain errors. If you find any inaccuracies:
+
+- [Report an issue](https://github.com/stonefruit/j6/issues/new)
+- Submit a pull request with corrections
+
+## Tech Stack
+
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **CSS3** - Styling with responsive design
+
+## Project Structure
+
+```
+j6/
+├── src/
+│   ├── components/
+│   │   ├── ChordSets.tsx         # Main component with filtering
+│   │   ├── Keyboard.tsx          # Piano keyboard visualization
+│   │   ├── TriggerKey.tsx        # J-6 trigger key display
+│   │   └── ChordPreviewKeyboard.tsx  # Preview keyboard
+│   ├── types.ts                  # TypeScript type definitions
+│   └── App.tsx                   # Root component
+├── j6-chords.json                # Chord set data
+└── package.json
+```
+
+## Contributing
+
+Contributions are welcome! Whether it's:
+
+- Fixing chord data errors
+- Improving the UI/UX
+- Adding new features
+- Improving documentation
+
+Please feel free to open an issue or submit a pull request.
+
+## License
+
+This project is open source and available under the MIT License.
+
+## Acknowledgments
+
+- Roland Corporation for the AIRA Compact J-6
+- All contributors who help improve the chord data accuracy
+
+## Related Links
+
+- [Roland J-6 Official Page](https://www.roland.com/us/products/j-6/)
+- [J-6 Manual](https://www.roland.com/us/support/by_product/j-6/owners_manuals/)
+
+---
+
+Made with ♪ for J-6 users everywhere
