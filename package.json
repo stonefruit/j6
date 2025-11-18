@@ -1,8 +1,16 @@
 {
-  "name": "my-vue-app",
-  "private": true,
+  "name": "j6",
+  "private": false,
   "version": "0.0.0",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stonefruit/j6"
+  },
+  "bugs": {
+    "url": "https://github.com/stonefruit/j6/issues"
+  },
+  "homepage": "https://github.com/stonefruit/j6#readme",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

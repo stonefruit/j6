@@ -23,6 +23,40 @@
   font-size: 1rem;
 }
 
+.header-info {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #856404;
+}
+
+.info-icon {
+  font-size: 1.2rem;
+  cursor: help;
+}
+
+.info-text {
+  line-height: 1.4;
+}
+
+.issue-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.issue-link:hover {
+  border-bottom-color: #667eea;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -286,6 +320,31 @@
   background: #45a049;
 }
 
+.app-footer {
+  margin-top: 3rem;
+  padding: 1.5rem 0;
+  text-align: center;
+  border-top: 2px solid #e0e0e0;
+  color: #666;
+}
+
+.app-footer p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.github-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.github-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
   .chord-sets-container {
@@ -298,6 +357,13 @@
 
   .subtitle {
     font-size: 0.9rem;
+  }
+
+  .header-info {
+    font-size: 0.85rem;
+    padding: 0.625rem 0.875rem;
+    flex-direction: column;
+    text-align: center;
   }
 
   .filters {
