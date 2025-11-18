@@ -1,0 +1,99 @@
+.trigger-key-container {
+  margin-bottom: 0.5rem;
+}
+
+.trigger-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: fit-content;
+}
+
+.trigger-keyboard-row {
+  display: flex;
+  gap: 1px;
+}
+
+.trigger-black-keys-row {
+  margin-left: 6px;
+}
+
+.trigger-key-gap {
+  width: 3px;
+}
+
+.trigger-key {
+  width: 12px;
+  height: 16px;
+  border-radius: 2px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.trigger-key-label {
+  font-size: 6px;
+  font-weight: bold;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Black keys (now white by default) */
+.trigger-black-key {
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.trigger-black-key .trigger-key-label {
+  color: #333;
+}
+
+.trigger-black-key.active {
+  background-color: #667eea;
+  border: 1px solid #667eea;
+  box-shadow: 0 0 3px rgba(102, 126, 234, 0.6);
+}
+
+.trigger-black-key.active .trigger-key-label {
+  color: #fff;
+}
+
+.trigger-black-key.gap {
+  background-color: transparent;
+  border: none;
+  pointer-events: none;
+}
+
+/* White keys */
+.trigger-white-key {
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.trigger-white-key .trigger-key-label {
+  color: #333;
+}
+
+.trigger-white-key.active {
+  background-color: #667eea;
+  border: 1px solid #667eea;
+  box-shadow: 0 0 3px rgba(102, 126, 234, 0.6);
+}
+
+.trigger-white-key.active .trigger-key-label {
+  color: #fff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .trigger-key {
+    width: 10px;
+    height: 14px;
+  }
+
+  .trigger-key-label {
+    font-size: 5px;
+  }
+}
