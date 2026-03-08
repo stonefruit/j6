@@ -232,6 +232,22 @@
   background: #fafafa;
 }
 
+.details-toggle {
+  width: 100%;
+  padding: 0.5rem;
+  background: #e8e8e8;
+  border: none;
+  border-radius: 6px;
+  color: #555;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.details-toggle:hover {
+  background: #ddd;
+}
+
 .chords-list {
   display: flex;
   flex-direction: column;

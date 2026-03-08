@@ -128,6 +128,7 @@ export default function ChordSets() {
 
 function ChordSetCard({ chordSet }: { chordSet: ChordSet }) {
   const [expanded, setExpanded] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   return (
     <div className="chord-set-card">
@@ -148,27 +149,36 @@ function ChordSetCard({ chordSet }: { chordSet: ChordSet }) {
 
       {expanded && (
         <div className="card-content">
-          <div className="chords-list">
-            {chordSet.chords.map((chord, idx) => (
-              <div key={idx} className="chord-item">
-                <div className="chord-item-top">
-                  <div className="chord-info">
-                    <div className="chord-header">
-                      {chord.key && (
-                        <span className="chord-key">{chord.key}</span>
-                      )}
-                      <span className="chord-name">{chord.name}</span>
+          <button
+            className="details-toggle"
+            onClick={() => setShowDetails(!showDetails)}
+          >
+            {showDetails ? "Hide Details" : "Show Details"}
+          </button>
+
+          {showDetails && (
+            <div className="chords-list">
+              {chordSet.chords.map((chord, idx) => (
+                <div key={idx} className="chord-item">
+                  <div className="chord-item-top">
+                    <div className="chord-info">
+                      <div className="chord-header">
+                        {chord.key && (
+                          <span className="chord-key">{chord.key}</span>
+                        )}
+                        <span className="chord-name">{chord.name}</span>
+                      </div>
+                      <div className="chord-notes">
+                        {[...chord.notes].reverse().join(" - ")}
+                      </div>
                     </div>
-                    <div className="chord-notes">
-                      {[...chord.notes].reverse().join(" - ")}
-                    </div>
+                    <TriggerKey noteIndex={idx} />
                   </div>
-                  <TriggerKey noteIndex={idx} />
+                  <Keyboard notes={chord.notes} />
                 </div>
-                <Keyboard notes={chord.notes} />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
