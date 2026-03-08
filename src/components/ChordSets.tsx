@@ -1,6 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import chordData from "../../j6-chords.json";
 import type { ChordData, ChordSet } from "../types";
+import { getOutputs, sendNoteOn, sendNoteOff } from "../midi";
+import type { MidiOutputInfo } from "../midi";
 import Keyboard from "./Keyboard";
 import TriggerKey from "./TriggerKey";
 import ChordPreviewKeyboard from "./ChordPreviewKeyboard";
@@ -8,9 +10,46 @@ import "./ChordSets.css";
 
 const data: ChordData = chordData as ChordData;
 
+const KEY_MAP: Record<string, number> = {
+  a: 0, w: 1, s: 2, e: 3, d: 4, f: 5,
+  t: 6, g: 7, y: 8, h: 9, u: 10, j: 11,
+};
+
 export default function ChordSets() {
   const [searchNumber, setSearchNumber] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+
+  // MIDI state
+  const [midiAccess, setMidiAccess] = useState<MIDIAccess | null>(null);
+  const [midiOutputs, setMidiOutputs] = useState<MidiOutputInfo[]>([]);
+  const [midiOutputId, setMidiOutputId] = useState("");
+
+  const midiOutputRef = useRef<MIDIOutput | null>(null);
+
+  // Request MIDI access on mount
+  useEffect(() => {
+    if (!navigator.requestMIDIAccess) return;
+    navigator.requestMIDIAccess().then((access) => {
+      setMidiAccess(access);
+      setMidiOutputs(getOutputs(access));
+      access.onstatechange = () => {
+        setMidiOutputs(getOutputs(access));
+      };
+    }).catch(() => {
+      // MIDI not available
+    });
+  }, []);
+
+  // Update output ref when selection changes
+  useEffect(() => {
+    if (!midiAccess || !midiOutputId) {
+      midiOutputRef.current = null;
+      return;
+    }
+    midiOutputRef.current = midiAccess.outputs.get(midiOutputId) || null;
+  }, [midiAccess, midiOutputId]);
+
   // Get unique genres
   const genres = useMemo(() => {
     const uniqueGenres = new Set(data.chordSets.map((set) => set.genre));
@@ -78,6 +117,24 @@ export default function ChordSets() {
             ))}
           </select>
         </div>
+
+        <div className="filter-group">
+          <label htmlFor="midi-output">MIDI Output</label>
+          <select
+            id="midi-output"
+            value={midiOutputId}
+            onChange={(e) => setMidiOutputId(e.target.value)}
+          >
+            <option value="">
+              {midiAccess ? "None" : "MIDI not available"}
+            </option>
+            {midiOutputs.map((out) => (
+              <option key={out.id} value={out.id}>
+                {out.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="results-info">
@@ -90,7 +147,15 @@ export default function ChordSets() {
         }`}
       >
         {filteredChordSets.map((set) => (
-          <ChordSetCard key={set.number} chordSet={set} />
+          <ChordSetCard
+            key={set.number}
+            chordSet={set}
+            isSelected={selectedCard === set.number}
+            onSelect={() => setSelectedCard(
+              selectedCard === set.number ? null : set.number
+            )}
+            midiOutput={midiOutputRef}
+          />
         ))}
       </div>
 
@@ -125,11 +190,80 @@ export default function ChordSets() {
   );
 }
 
-function ChordSetCard({ chordSet }: { chordSet: ChordSet }) {
+interface ChordSetCardProps {
+  chordSet: ChordSet;
+  isSelected: boolean;
+  onSelect: () => void;
+  midiOutput: React.RefObject<MIDIOutput | null>;
+}
+
+function ChordSetCard({ chordSet, isSelected, onSelect, midiOutput }: ChordSetCardProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [activeKeyIndex, setActiveKeyIndex] = useState<number | null>(null);
+  const activeNotesRef = useRef<Map<number, string[]>>(new Map());
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      const index = KEY_MAP[e.key];
+      if (index === undefined) return;
+
+      const chord = chordSet.chords[index];
+      if (!chord) return;
+
+      // Send note on
+      if (midiOutput.current) {
+        sendNoteOn(midiOutput.current, chord.notes);
+      }
+      activeNotesRef.current.set(index, chord.notes);
+      setActiveKeyIndex(index);
+    },
+    [chordSet.chords, midiOutput]
+  );
+
+  const handleKeyUp = useCallback(
+    (e: KeyboardEvent) => {
+      const index = KEY_MAP[e.key];
+      if (index === undefined) return;
+
+      const notes = activeNotesRef.current.get(index);
+      if (notes && midiOutput.current) {
+        sendNoteOff(midiOutput.current, notes);
+      }
+      activeNotesRef.current.delete(index);
+
+      setActiveKeyIndex((prev) =>
+        prev === index ? (activeNotesRef.current.size > 0
+          ? [...activeNotesRef.current.keys()].pop()!
+          : null) : prev
+      );
+    },
+    [midiOutput]
+  );
+
+  useEffect(() => {
+    if (!isSelected) return;
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      // Send note off for any held notes
+      activeNotesRef.current.forEach((notes) => {
+        if (midiOutput.current) {
+          sendNoteOff(midiOutput.current, notes);
+        }
+      });
+      activeNotesRef.current.clear();
+      setActiveKeyIndex(null);
+    };
+  }, [isSelected, handleKeyDown, handleKeyUp, midiOutput]);
 
   return (
-    <div className="chord-set-card">
+    <div
+      className={`chord-set-card${isSelected ? " selected" : ""}`}
+      onClick={onSelect}
+    >
       <div className="card-header">
         <div className="card-title">
           <span className="set-number">#{chordSet.number}</span>
@@ -137,17 +271,23 @@ function ChordSetCard({ chordSet }: { chordSet: ChordSet }) {
         </div>
       </div>
 
-      <ChordPreviewKeyboard chords={chordSet.chords} />
+      <ChordPreviewKeyboard
+        chords={chordSet.chords}
+        activeKeyIndex={activeKeyIndex}
+      />
 
       <button
         className="details-toggle"
-        onClick={() => setShowDetails(!showDetails)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowDetails(!showDetails);
+        }}
       >
         {showDetails ? "Hide Details" : "Show Details"}
       </button>
 
       {showDetails && (
-        <div className="card-content">
+        <div className="card-content" onClick={(e) => e.stopPropagation()}>
           <div className="chords-list">
             {chordSet.chords.map((chord, idx) => (
               <div key={idx} className="chord-item">

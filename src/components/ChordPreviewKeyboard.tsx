@@ -3,6 +3,7 @@ import './ChordPreviewKeyboard.css';
 
 interface ChordPreviewKeyboardProps {
   chords: Chord[]; // Array of 12 chords
+  activeKeyIndex?: number | null;
 }
 
 const WHITE_KEY_INDICES = [0, 2, 4, 5, 7, 9, 11]; // C, D, E, F, G, A, B
@@ -16,7 +17,7 @@ const BLACK_KEY_SLOTS = [
   { index: -1, note: '' }, // Gap after B
 ];
 
-export default function ChordPreviewKeyboard({ chords }: ChordPreviewKeyboardProps) {
+export default function ChordPreviewKeyboard({ chords, activeKeyIndex }: ChordPreviewKeyboardProps) {
   return (
     <div className="chord-preview-keyboard-container">
       <div className="chord-preview-keyboard">
@@ -27,7 +28,7 @@ export default function ChordPreviewKeyboard({ chords }: ChordPreviewKeyboardPro
               return <div key={`gap-${idx}`} className="preview-key preview-black-key gap"></div>;
             }
             return (
-              <div key={`black-${slot.index}`} className="preview-key preview-black-key">
+              <div key={`black-${slot.index}`} className={`preview-key preview-black-key${activeKeyIndex === slot.index ? ' active' : ''}`}>
                 <span className="preview-key-label">{chords[slot.index]?.name || ''}</span>
               </div>
             );
@@ -37,7 +38,7 @@ export default function ChordPreviewKeyboard({ chords }: ChordPreviewKeyboardPro
         {/* White keys row */}
         <div className="preview-keyboard-row preview-white-keys-row">
           {WHITE_KEY_INDICES.map((index) => (
-            <div key={`white-${index}`} className="preview-key preview-white-key">
+            <div key={`white-${index}`} className={`preview-key preview-white-key${activeKeyIndex === index ? ' active' : ''}`}>
               <span className="preview-key-label">{chords[index]?.name || ''}</span>
             </div>
           ))}

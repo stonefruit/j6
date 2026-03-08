@@ -76,3 +76,18 @@
 .preview-white-key .preview-key-label {
   color: #333;
 }
+
+/* Active key highlight */
+.preview-white-key.active {
+  background-color: #667eea;
+  border-color: #5a6fd6;
+}
+
+.preview-white-key.active .preview-key-label {
+  color: #fff;
+}
+
+.preview-black-key.active {
+  background-color: #8b9cf7;
+  border-color: #7b8ce7;
+}
