@@ -15,7 +15,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "parse-chords": "node scripts/parse-chords.js"
   },
   "dependencies": {
     "react": "^19.2.0",

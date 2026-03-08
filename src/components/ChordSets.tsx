@@ -33,22 +33,6 @@ export default function ChordSets() {
       <header className="app-header">
         <h1>J-6 Chord Sets</h1>
         <p className="subtitle">Browse and explore Roland J-6 chord sets</p>
-        <div className="header-info">
-          <span className="info-icon" title="Data accuracy disclaimer">
-            ℹ️
-          </span>
-          <span className="info-text">
-            Chord data may not be 100% accurate. Found an error?{" "}
-            <a
-              href="https://github.com/stonefruit/j6/issues/new"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="issue-link"
-            >
-              Report it on GitHub
-            </a>
-          </span>
-        </div>
       </header>
 
       <div className="filters">

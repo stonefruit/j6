@@ -1,5 +1,5 @@
 export interface Chord {
-  key?: string;
+  key: string;
   name: string;
   notes: string[];
 }
