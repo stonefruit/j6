@@ -99,6 +99,21 @@
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
+.midi-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.midi-row select:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.channel-select {
+  width: 70px;
+  flex-shrink: 0;
+}
+
 .midi-help-btn {
   display: inline-flex;
   align-items: center;

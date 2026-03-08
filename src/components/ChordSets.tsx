@@ -1,8 +1,14 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import chordData from "../../j6-chords.json";
 import type { ChordData, ChordSet } from "../types";
-import { getOutputs, sendNoteOn, sendNoteOff } from "../midi";
-import type { MidiOutputInfo } from "../midi";
+import {
+  getOutputs,
+  getInputs,
+  sendNoteOn,
+  sendNoteOff,
+  parseMidiMessage,
+} from "../midi";
+import type { MidiPortInfo } from "../midi";
 import Keyboard from "./Keyboard";
 import TriggerKey from "./TriggerKey";
 import ChordPreviewKeyboard from "./ChordPreviewKeyboard";
@@ -15,6 +21,8 @@ const KEY_MAP: Record<string, number> = {
   t: 6, g: 7, y: 8, h: 9, u: 10, j: 11,
 };
 
+const CHANNELS = Array.from({ length: 16 }, (_, i) => i);
+
 export default function ChordSets() {
   const [searchNumber, setSearchNumber] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
@@ -22,11 +30,64 @@ export default function ChordSets() {
 
   // MIDI state
   const [midiAccess, setMidiAccess] = useState<MIDIAccess | null>(null);
-  const [midiOutputs, setMidiOutputs] = useState<MidiOutputInfo[]>([]);
+  const [midiOutputs, setMidiOutputs] = useState<MidiPortInfo[]>([]);
+  const [midiInputs, setMidiInputs] = useState<MidiPortInfo[]>([]);
   const [midiOutputId, setMidiOutputId] = useState("");
+  const [midiInputId, setMidiInputId] = useState("");
+  const [inputChannel, setInputChannel] = useState(0);
+  const [outputChannel, setOutputChannel] = useState(1);
   const [showMidiHelp, setShowMidiHelp] = useState(false);
 
   const midiOutputRef = useRef<MIDIOutput | null>(null);
+  const inputChannelRef = useRef(inputChannel);
+  const outputChannelRef = useRef(outputChannel);
+
+  // Keep refs in sync
+  useEffect(() => { inputChannelRef.current = inputChannel; }, [inputChannel]);
+  useEffect(() => { outputChannelRef.current = outputChannel; }, [outputChannel]);
+
+  // Callback for MIDI input triggering chords on the selected card
+  const selectedCardRef = useRef(selectedCard);
+  useEffect(() => { selectedCardRef.current = selectedCard; }, [selectedCard]);
+
+  const activeInputNotesRef = useRef<Map<number, string[]>>(new Map());
+  const [midiActiveKeyIndex, setMidiActiveKeyIndex] = useState<number | null>(null);
+
+  const handleMidiMessage = useCallback((e: MIDIMessageEvent) => {
+    if (!e.data) return;
+    const event = parseMidiMessage(e.data);
+    if (!event) return;
+    if (event.channel !== inputChannelRef.current) return;
+
+    const cardNum = selectedCardRef.current;
+    if (cardNum === null) return;
+
+    const chordSet = data.chordSets.find((s) => s.number === cardNum);
+    if (!chordSet) return;
+
+    const chordIndex = event.note % 12;
+    const chord = chordSet.chords[chordIndex];
+    if (!chord) return;
+
+    if (event.type === "noteon") {
+      if (midiOutputRef.current) {
+        sendNoteOn(midiOutputRef.current, chord.notes, event.velocity, outputChannelRef.current);
+      }
+      activeInputNotesRef.current.set(event.note, chord.notes);
+      setMidiActiveKeyIndex(chordIndex);
+    } else {
+      const notes = activeInputNotesRef.current.get(event.note);
+      if (notes && midiOutputRef.current) {
+        sendNoteOff(midiOutputRef.current, notes, outputChannelRef.current);
+      }
+      activeInputNotesRef.current.delete(event.note);
+      setMidiActiveKeyIndex(
+        activeInputNotesRef.current.size > 0
+          ? [...activeInputNotesRef.current.keys()].pop()! % 12
+          : null
+      );
+    }
+  }, []);
 
   // Request MIDI access on mount
   useEffect(() => {
@@ -34,8 +95,10 @@ export default function ChordSets() {
     navigator.requestMIDIAccess().then((access) => {
       setMidiAccess(access);
       setMidiOutputs(getOutputs(access));
+      setMidiInputs(getInputs(access));
       access.onstatechange = () => {
         setMidiOutputs(getOutputs(access));
+        setMidiInputs(getInputs(access));
       };
     }).catch(() => {
       // MIDI not available
@@ -50,6 +113,26 @@ export default function ChordSets() {
     }
     midiOutputRef.current = midiAccess.outputs.get(midiOutputId) || null;
   }, [midiAccess, midiOutputId]);
+
+  // Attach/detach MIDI input listener
+  useEffect(() => {
+    if (!midiAccess || !midiInputId) return;
+    const input = midiAccess.inputs.get(midiInputId);
+    if (!input) return;
+
+    input.onmidimessage = handleMidiMessage;
+    return () => {
+      input.onmidimessage = null;
+      // Note off for any held notes
+      activeInputNotesRef.current.forEach((notes) => {
+        if (midiOutputRef.current) {
+          sendNoteOff(midiOutputRef.current, notes, outputChannelRef.current);
+        }
+      });
+      activeInputNotesRef.current.clear();
+      setMidiActiveKeyIndex(null);
+    };
+  }, [midiAccess, midiInputId, handleMidiMessage]);
 
   // Get unique genres
   const genres = useMemo(() => {
@@ -120,6 +203,36 @@ export default function ChordSets() {
         </div>
 
         <div className="filter-group">
+          <label htmlFor="midi-input">MIDI Input</label>
+          <div className="midi-row">
+            <select
+              id="midi-input"
+              value={midiInputId}
+              onChange={(e) => setMidiInputId(e.target.value)}
+            >
+              <option value="">
+                {midiAccess ? "None" : "MIDI not available"}
+              </option>
+              {midiInputs.map((inp) => (
+                <option key={inp.id} value={inp.id}>
+                  {inp.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="channel-select"
+              value={inputChannel}
+              onChange={(e) => setInputChannel(parseInt(e.target.value, 10))}
+              title="Input MIDI channel"
+            >
+              {CHANNELS.map((ch) => (
+                <option key={ch} value={ch}>Ch {ch + 1}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="filter-group">
           <label htmlFor="midi-output">
             MIDI Output
             <button
@@ -130,20 +243,32 @@ export default function ChordSets() {
               ?
             </button>
           </label>
-          <select
-            id="midi-output"
-            value={midiOutputId}
-            onChange={(e) => setMidiOutputId(e.target.value)}
-          >
-            <option value="">
-              {midiAccess ? "None" : "MIDI not available"}
-            </option>
-            {midiOutputs.map((out) => (
-              <option key={out.id} value={out.id}>
-                {out.name}
+          <div className="midi-row">
+            <select
+              id="midi-output"
+              value={midiOutputId}
+              onChange={(e) => setMidiOutputId(e.target.value)}
+            >
+              <option value="">
+                {midiAccess ? "None" : "MIDI not available"}
               </option>
-            ))}
-          </select>
+              {midiOutputs.map((out) => (
+                <option key={out.id} value={out.id}>
+                  {out.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="channel-select"
+              value={outputChannel}
+              onChange={(e) => setOutputChannel(parseInt(e.target.value, 10))}
+              title="Output MIDI channel"
+            >
+              {CHANNELS.map((ch) => (
+                <option key={ch} value={ch}>Ch {ch + 1}</option>
+              ))}
+            </select>
+          </div>
           {showMidiHelp && (
             <div className="midi-help">
               <p><strong>macOS setup (IAC Driver):</strong></p>
@@ -152,10 +277,15 @@ export default function ChordSets() {
                 <li>Window &rarr; Show MIDI Studio</li>
                 <li>Double-click <strong>IAC Driver</strong></li>
                 <li>Check <strong>Device is online</strong>, click Apply</li>
-                <li>Refresh this page &mdash; select IAC Driver above</li>
-                <li>In Ableton, set a MIDI track input to &ldquo;IAC Driver Bus 1&rdquo;</li>
+                <li>Refresh this page &mdash; select IAC Driver for both input and output</li>
               </ol>
-              <p>Click a chord set card, then use keys <kbd>a</kbd><kbd>w</kbd><kbd>s</kbd><kbd>e</kbd><kbd>d</kbd><kbd>f</kbd><kbd>t</kbd><kbd>g</kbd><kbd>y</kbd><kbd>h</kbd><kbd>u</kbd><kbd>j</kbd> to play chords.</p>
+              <p><strong>With Ableton:</strong></p>
+              <ol>
+                <li>Set MIDI Input to IAC Driver, choose an input channel (e.g. Ch 1)</li>
+                <li>Set MIDI Output to IAC Driver, choose a different output channel (e.g. Ch 2)</li>
+                <li>In Ableton, send notes on Ch 1 to trigger chords &mdash; chords return on Ch 2</li>
+              </ol>
+              <p><strong>Keyboard:</strong> Click a card, then use <kbd>a</kbd><kbd>w</kbd><kbd>s</kbd><kbd>e</kbd><kbd>d</kbd><kbd>f</kbd><kbd>t</kbd><kbd>g</kbd><kbd>y</kbd><kbd>h</kbd><kbd>u</kbd><kbd>j</kbd> to play chords.</p>
             </div>
           )}
         </div>
@@ -179,6 +309,10 @@ export default function ChordSets() {
               selectedCard === set.number ? null : set.number
             )}
             midiOutput={midiOutputRef}
+            outputChannel={outputChannel}
+            midiActiveKeyIndex={
+              selectedCard === set.number ? midiActiveKeyIndex : null
+            }
           />
         ))}
       </div>
@@ -219,12 +353,23 @@ interface ChordSetCardProps {
   isSelected: boolean;
   onSelect: () => void;
   midiOutput: React.RefObject<MIDIOutput | null>;
+  outputChannel: number;
+  midiActiveKeyIndex: number | null;
 }
 
-function ChordSetCard({ chordSet, isSelected, onSelect, midiOutput }: ChordSetCardProps) {
+function ChordSetCard({
+  chordSet,
+  isSelected,
+  onSelect,
+  midiOutput,
+  outputChannel,
+  midiActiveKeyIndex,
+}: ChordSetCardProps) {
   const [showDetails, setShowDetails] = useState(false);
-  const [activeKeyIndex, setActiveKeyIndex] = useState<number | null>(null);
+  const [kbActiveKeyIndex, setKbActiveKeyIndex] = useState<number | null>(null);
   const activeNotesRef = useRef<Map<number, string[]>>(new Map());
+  const outputChannelRef = useRef(outputChannel);
+  useEffect(() => { outputChannelRef.current = outputChannel; }, [outputChannel]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -235,12 +380,11 @@ function ChordSetCard({ chordSet, isSelected, onSelect, midiOutput }: ChordSetCa
       const chord = chordSet.chords[index];
       if (!chord) return;
 
-      // Send note on
       if (midiOutput.current) {
-        sendNoteOn(midiOutput.current, chord.notes);
+        sendNoteOn(midiOutput.current, chord.notes, 100, outputChannelRef.current);
       }
       activeNotesRef.current.set(index, chord.notes);
-      setActiveKeyIndex(index);
+      setKbActiveKeyIndex(index);
     },
     [chordSet.chords, midiOutput]
   );
@@ -252,14 +396,16 @@ function ChordSetCard({ chordSet, isSelected, onSelect, midiOutput }: ChordSetCa
 
       const notes = activeNotesRef.current.get(index);
       if (notes && midiOutput.current) {
-        sendNoteOff(midiOutput.current, notes);
+        sendNoteOff(midiOutput.current, notes, outputChannelRef.current);
       }
       activeNotesRef.current.delete(index);
 
-      setActiveKeyIndex((prev) =>
-        prev === index ? (activeNotesRef.current.size > 0
-          ? [...activeNotesRef.current.keys()].pop()!
-          : null) : prev
+      setKbActiveKeyIndex((prev) =>
+        prev === index
+          ? activeNotesRef.current.size > 0
+            ? [...activeNotesRef.current.keys()].pop()!
+            : null
+          : prev
       );
     },
     [midiOutput]
@@ -272,16 +418,18 @@ function ChordSetCard({ chordSet, isSelected, onSelect, midiOutput }: ChordSetCa
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      // Send note off for any held notes
       activeNotesRef.current.forEach((notes) => {
         if (midiOutput.current) {
-          sendNoteOff(midiOutput.current, notes);
+          sendNoteOff(midiOutput.current, notes, outputChannelRef.current);
         }
       });
       activeNotesRef.current.clear();
-      setActiveKeyIndex(null);
+      setKbActiveKeyIndex(null);
     };
   }, [isSelected, handleKeyDown, handleKeyUp, midiOutput]);
+
+  // Merge keyboard and MIDI input active key (either can light up the key)
+  const activeKeyIndex = kbActiveKeyIndex ?? midiActiveKeyIndex;
 
   return (
     <div
