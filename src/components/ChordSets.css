@@ -163,6 +163,48 @@
   color: #333;
 }
 
+.favourites-btn {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.favourites-btn:hover {
+  background: #f0f0f0;
+}
+
+.favourites-btn.active {
+  background: #fff8e1;
+  border-color: #ffc107;
+  color: #f57f17;
+}
+
+.fav-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.fav-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.fav-btn.active {
+  color: #ffd54f;
+}
+
 .midi-help-btn {
   display: inline-flex;
   align-items: center;
@@ -269,6 +311,12 @@
   border-radius: 10px;
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.now-playing-warning {
+  color: #ffd54f;
+  font-size: 0.8rem;
+  margin-left: auto;
 }
 
 .now-playing-empty {

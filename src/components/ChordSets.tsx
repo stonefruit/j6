@@ -27,7 +27,23 @@ const NOTE_NAMES_FROM_C = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A",
 export default function ChordSets() {
   const [searchNumber, setSearchNumber] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
+  const [showFavourites, setShowFavourites] = useState(false);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
+  const [favourites, setFavourites] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem("j6-favourites");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
+
+  const toggleFavourite = useCallback((num: number) => {
+    setFavourites((prev) => {
+      const next = new Set(prev);
+      if (next.has(num)) next.delete(num); else next.add(num);
+      localStorage.setItem("j6-favourites", JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
 
   // MIDI state
   const [midiAccess, setMidiAccess] = useState<MIDIAccess | null>(null);
@@ -168,12 +184,13 @@ export default function ChordSets() {
   // Filter chord sets
   const filteredChordSets = useMemo(() => {
     return data.chordSets.filter((set) => {
+      if (showFavourites && !favourites.has(set.number)) return false;
       const matchesNumber =
         searchNumber === "" || set.number.toString().includes(searchNumber);
       const matchesGenre = selectedGenre === "" || set.genre === selectedGenre;
       return matchesNumber && matchesGenre;
     });
-  }, [searchNumber, selectedGenre]);
+  }, [searchNumber, selectedGenre, showFavourites, favourites]);
 
   return (
     <div className="chord-sets-container">
@@ -226,6 +243,17 @@ export default function ChordSets() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="filter-group filter-group-compact">
+            <label>&nbsp;</label>
+            <button
+              className={`favourites-btn${showFavourites ? " active" : ""}`}
+              onClick={() => setShowFavourites((v) => !v)}
+              title={showFavourites ? "Show all" : "Show favourites only"}
+            >
+              {showFavourites ? "\u2605" : "\u2606"} Favourites{favourites.size > 0 ? ` (${favourites.size})` : ""}
+            </button>
           </div>
         </div>
 
@@ -343,11 +371,15 @@ export default function ChordSets() {
       <div className="now-playing">
         {selectedCard !== null ? (() => {
           const set = data.chordSets.find((s) => s.number === selectedCard);
+          const isVisible = filteredChordSets.some((s) => s.number === selectedCard);
           return set ? (
             <>
               <span className="now-playing-label">Now Playing</span>
               <span className="now-playing-set">#{set.number}</span>
               <span className="now-playing-genre">{set.genre}</span>
+              {!isVisible && (
+                <span className="now-playing-warning">Not in current view — keyboard/MIDI disabled</span>
+              )}
             </>
           ) : null;
         })() : (
@@ -369,9 +401,11 @@ export default function ChordSets() {
             key={set.number}
             chordSet={set}
             isSelected={selectedCard === set.number}
+            isFavourite={favourites.has(set.number)}
             onSelect={() => setSelectedCard(
               selectedCard === set.number ? null : set.number
             )}
+            onToggleFavourite={() => toggleFavourite(set.number)}
             midiOutput={midiOutputRef}
             outputChannel={outputChannel}
             midiActiveKeyIndex={
@@ -416,7 +450,9 @@ export default function ChordSets() {
 interface ChordSetCardProps {
   chordSet: ChordSet;
   isSelected: boolean;
+  isFavourite: boolean;
   onSelect: () => void;
+  onToggleFavourite: () => void;
   midiOutput: React.RefObject<MIDIOutput | null>;
   outputChannel: number;
   midiActiveKeyIndex: number | null;
@@ -426,7 +462,9 @@ interface ChordSetCardProps {
 function ChordSetCard({
   chordSet,
   isSelected,
+  isFavourite,
   onSelect,
+  onToggleFavourite,
   midiOutput,
   outputChannel,
   midiActiveKeyIndex,
@@ -511,6 +549,13 @@ function ChordSetCard({
           <span className="set-number">#{chordSet.number}</span>
           <span className="genre-badge">{chordSet.genre}</span>
         </div>
+        <button
+          className={`fav-btn${isFavourite ? " active" : ""}`}
+          onClick={(e) => { e.stopPropagation(); onToggleFavourite(); }}
+          title={isFavourite ? "Remove from favourites" : "Add to favourites"}
+        >
+          {isFavourite ? "\u2605" : "\u2606"}
+        </button>
       </div>
 
       <ChordPreviewKeyboard
