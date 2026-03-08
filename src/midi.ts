@@ -8,6 +8,8 @@ const NOTE_NAMES: Record<string, number> = {
   B: 11,
 };
 
+const SEMITONE_TO_NAME = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
 export function noteToMidi(noteStr: string): number | null {
   const match = noteStr.match(/^([A-G][#b]?)(\d+)$/);
   if (!match) return null;
@@ -15,6 +17,28 @@ export function noteToMidi(noteStr: string): number | null {
   if (semitone === undefined) return null;
   const octave = parseInt(match[2], 10);
   return (octave + 1) * 12 + semitone;
+}
+
+export function transposeNoteName(noteStr: string, semitones: number): string {
+  const match = noteStr.match(/^([A-G][#b]?)(\d+)$/);
+  if (!match) return noteStr;
+  const sem = NOTE_NAMES[match[1]];
+  if (sem === undefined) return noteStr;
+  const midi = (parseInt(match[2], 10) + 1) * 12 + sem + semitones;
+  const clamped = Math.max(0, Math.min(127, midi));
+  const newOctave = Math.floor(clamped / 12) - 1;
+  const newSem = clamped % 12;
+  return SEMITONE_TO_NAME[newSem] + newOctave;
+}
+
+export function transposeChordName(name: string, semitones: number): string {
+  if (!name || semitones === 0) return name;
+  const match = name.match(/^([A-G][#b]?)(.*)/);
+  if (!match) return name;
+  const rootSem = NOTE_NAMES[match[1]];
+  if (rootSem === undefined) return name;
+  const newSem = ((rootSem + semitones) % 12 + 12) % 12;
+  return SEMITONE_TO_NAME[newSem] + match[2];
 }
 
 export interface MidiPortInfo {
@@ -38,33 +62,37 @@ export function getInputs(access: MIDIAccess): MidiPortInfo[] {
   return inputs;
 }
 
-/** channel: 0-15 (0 = MIDI channel 1) */
+/** channel: 0-15 (0 = MIDI channel 1), transpose: semitones to shift */
 export function sendNoteOn(
   output: MIDIOutput,
   notes: string[],
   velocity = 100,
-  channel = 0
+  channel = 0,
+  transpose = 0
 ): void {
   const status = 0x90 + channel;
   for (const note of notes) {
     const midi = noteToMidi(note);
     if (midi !== null) {
-      output.send([status, midi, velocity]);
+      const shifted = Math.max(0, Math.min(127, midi + transpose));
+      output.send([status, shifted, velocity]);
     }
   }
 }
 
-/** channel: 0-15 (0 = MIDI channel 1) */
+/** channel: 0-15 (0 = MIDI channel 1), transpose: semitones to shift */
 export function sendNoteOff(
   output: MIDIOutput,
   notes: string[],
-  channel = 0
+  channel = 0,
+  transpose = 0
 ): void {
   const status = 0x80 + channel;
   for (const note of notes) {
     const midi = noteToMidi(note);
     if (midi !== null) {
-      output.send([status, midi, 0x40]);
+      const shifted = Math.max(0, Math.min(127, midi + transpose));
+      output.send([status, shifted, 0x40]);
     }
   }
 }

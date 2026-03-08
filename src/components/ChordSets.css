@@ -114,6 +114,43 @@
   flex-shrink: 0;
 }
 
+.transpose-control {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.transpose-control button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.transpose-control button:hover:not(:disabled) {
+  background: #e8e8e8;
+}
+
+.transpose-control button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.transpose-value {
+  min-width: 2rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #333;
+}
+
 .midi-help-btn {
   display: inline-flex;
   align-items: center;

@@ -22,6 +22,7 @@ const KEY_MAP: Record<string, number> = {
 };
 
 const CHANNELS = Array.from({ length: 16 }, (_, i) => i);
+const NOTE_NAMES_FROM_C = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 export default function ChordSets() {
   const [searchNumber, setSearchNumber] = useState("");
@@ -43,14 +44,28 @@ export default function ChordSets() {
     return saved !== null ? parseInt(saved, 10) : 1;
   });
   const [showMidiHelp, setShowMidiHelp] = useState(false);
+  const [octave, setOctave] = useState(() => {
+    const saved = localStorage.getItem("j6-octave");
+    return saved !== null ? parseInt(saved, 10) : 0;
+  });
+  const [transpose, setTranspose] = useState(() => {
+    const saved = localStorage.getItem("j6-transpose");
+    return saved !== null ? parseInt(saved, 10) : 0;
+  });
+
+  const totalTranspose = octave * 12 + transpose;
 
   const midiOutputRef = useRef<MIDIOutput | null>(null);
   const inputChannelRef = useRef(inputChannel);
   const outputChannelRef = useRef(outputChannel);
+  const totalTransposeRef = useRef(totalTranspose);
 
   // Keep refs and localStorage in sync
   useEffect(() => { inputChannelRef.current = inputChannel; localStorage.setItem("j6-input-channel", String(inputChannel)); }, [inputChannel]);
   useEffect(() => { outputChannelRef.current = outputChannel; localStorage.setItem("j6-output-channel", String(outputChannel)); }, [outputChannel]);
+  useEffect(() => { totalTransposeRef.current = totalTranspose; }, [totalTranspose]);
+  useEffect(() => { localStorage.setItem("j6-octave", String(octave)); }, [octave]);
+  useEffect(() => { localStorage.setItem("j6-transpose", String(transpose)); }, [transpose]);
 
   // Callback for MIDI input triggering chords on the selected card
   const selectedCardRef = useRef(selectedCard);
@@ -77,14 +92,14 @@ export default function ChordSets() {
 
     if (event.type === "noteon") {
       if (midiOutputRef.current) {
-        sendNoteOn(midiOutputRef.current, chord.notes, event.velocity, outputChannelRef.current);
+        sendNoteOn(midiOutputRef.current, chord.notes, event.velocity, outputChannelRef.current, totalTransposeRef.current);
       }
       activeInputNotesRef.current.set(event.note, chord.notes);
       setMidiActiveKeyIndex(chordIndex);
     } else {
       const notes = activeInputNotesRef.current.get(event.note);
       if (notes && midiOutputRef.current) {
-        sendNoteOff(midiOutputRef.current, notes, outputChannelRef.current);
+        sendNoteOff(midiOutputRef.current, notes, outputChannelRef.current, totalTransposeRef.current);
       }
       activeInputNotesRef.current.delete(event.note);
       setMidiActiveKeyIndex(
@@ -136,7 +151,7 @@ export default function ChordSets() {
       // Note off for any held notes
       activeInputNotesRef.current.forEach((notes) => {
         if (midiOutputRef.current) {
-          sendNoteOff(midiOutputRef.current, notes, outputChannelRef.current);
+          sendNoteOff(midiOutputRef.current, notes, outputChannelRef.current, totalTransposeRef.current);
         }
       });
       activeInputNotesRef.current.clear();
@@ -299,6 +314,24 @@ export default function ChordSets() {
             </div>
           )}
         </div>
+
+        <div className="filter-group">
+          <label>Octave</label>
+          <div className="transpose-control">
+            <button onClick={() => setOctave((v) => Math.max(-3, v - 1))} disabled={octave <= -3}>-</button>
+            <span className="transpose-value">{octave >= 0 ? `+${octave}` : octave}</span>
+            <button onClick={() => setOctave((v) => Math.min(3, v + 1))} disabled={octave >= 3}>+</button>
+          </div>
+        </div>
+
+        <div className="filter-group">
+          <label>Transpose ({NOTE_NAMES_FROM_C[((totalTranspose % 12) + 12) % 12]})</label>
+          <div className="transpose-control">
+            <button onClick={() => setTranspose((v) => Math.max(-11, v - 1))} disabled={transpose <= -11}>-</button>
+            <span className="transpose-value">{transpose >= 0 ? `+${transpose}` : transpose}</span>
+            <button onClick={() => setTranspose((v) => Math.min(11, v + 1))} disabled={transpose >= 11}>+</button>
+          </div>
+        </div>
       </div>
 
       {/* Now Playing indicator */}
@@ -339,6 +372,7 @@ export default function ChordSets() {
             midiActiveKeyIndex={
               selectedCard === set.number ? midiActiveKeyIndex : null
             }
+            totalTranspose={totalTranspose}
           />
         ))}
       </div>
@@ -381,6 +415,7 @@ interface ChordSetCardProps {
   midiOutput: React.RefObject<MIDIOutput | null>;
   outputChannel: number;
   midiActiveKeyIndex: number | null;
+  totalTranspose: number;
 }
 
 function ChordSetCard({
@@ -390,12 +425,15 @@ function ChordSetCard({
   midiOutput,
   outputChannel,
   midiActiveKeyIndex,
+  totalTranspose,
 }: ChordSetCardProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [kbActiveKeyIndex, setKbActiveKeyIndex] = useState<number | null>(null);
   const activeNotesRef = useRef<Map<number, string[]>>(new Map());
   const outputChannelRef = useRef(outputChannel);
+  const totalTransposeRef = useRef(totalTranspose);
   useEffect(() => { outputChannelRef.current = outputChannel; }, [outputChannel]);
+  useEffect(() => { totalTransposeRef.current = totalTranspose; }, [totalTranspose]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -407,7 +445,7 @@ function ChordSetCard({
       if (!chord) return;
 
       if (midiOutput.current) {
-        sendNoteOn(midiOutput.current, chord.notes, 100, outputChannelRef.current);
+        sendNoteOn(midiOutput.current, chord.notes, 100, outputChannelRef.current, totalTransposeRef.current);
       }
       activeNotesRef.current.set(index, chord.notes);
       setKbActiveKeyIndex(index);
@@ -422,7 +460,7 @@ function ChordSetCard({
 
       const notes = activeNotesRef.current.get(index);
       if (notes && midiOutput.current) {
-        sendNoteOff(midiOutput.current, notes, outputChannelRef.current);
+        sendNoteOff(midiOutput.current, notes, outputChannelRef.current, totalTransposeRef.current);
       }
       activeNotesRef.current.delete(index);
 
@@ -446,7 +484,7 @@ function ChordSetCard({
       window.removeEventListener("keyup", handleKeyUp);
       activeNotesRef.current.forEach((notes) => {
         if (midiOutput.current) {
-          sendNoteOff(midiOutput.current, notes, outputChannelRef.current);
+          sendNoteOff(midiOutput.current, notes, outputChannelRef.current, totalTransposeRef.current);
         }
       });
       activeNotesRef.current.clear();
@@ -456,6 +494,7 @@ function ChordSetCard({
 
   // Merge keyboard and MIDI input active key (either can light up the key)
   const activeKeyIndex = kbActiveKeyIndex ?? midiActiveKeyIndex;
+
 
   return (
     <div
