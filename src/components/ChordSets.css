@@ -99,6 +99,62 @@
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
+.midi-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0;
+  border: 1px solid #aaa;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #555;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.midi-help-btn:hover {
+  background: #ddd;
+}
+
+.midi-help {
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.midi-help p {
+  margin: 0 0 0.4rem;
+}
+
+.midi-help ol {
+  margin: 0 0 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.midi-help li {
+  margin-bottom: 0.2rem;
+}
+
+.midi-help kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
 .clear-btn {
   align-self: flex-end;
   padding: 0.75rem 1.5rem;

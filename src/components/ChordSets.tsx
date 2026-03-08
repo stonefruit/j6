@@ -24,6 +24,7 @@ export default function ChordSets() {
   const [midiAccess, setMidiAccess] = useState<MIDIAccess | null>(null);
   const [midiOutputs, setMidiOutputs] = useState<MidiOutputInfo[]>([]);
   const [midiOutputId, setMidiOutputId] = useState("");
+  const [showMidiHelp, setShowMidiHelp] = useState(false);
 
   const midiOutputRef = useRef<MIDIOutput | null>(null);
 
@@ -119,7 +120,16 @@ export default function ChordSets() {
         </div>
 
         <div className="filter-group">
-          <label htmlFor="midi-output">MIDI Output</label>
+          <label htmlFor="midi-output">
+            MIDI Output
+            <button
+              className="midi-help-btn"
+              onClick={() => setShowMidiHelp((v) => !v)}
+              title="MIDI setup help"
+            >
+              ?
+            </button>
+          </label>
           <select
             id="midi-output"
             value={midiOutputId}
@@ -134,6 +144,20 @@ export default function ChordSets() {
               </option>
             ))}
           </select>
+          {showMidiHelp && (
+            <div className="midi-help">
+              <p><strong>macOS setup (IAC Driver):</strong></p>
+              <ol>
+                <li>Open <strong>Audio MIDI Setup</strong> (Spotlight search)</li>
+                <li>Window &rarr; Show MIDI Studio</li>
+                <li>Double-click <strong>IAC Driver</strong></li>
+                <li>Check <strong>Device is online</strong>, click Apply</li>
+                <li>Refresh this page &mdash; select IAC Driver above</li>
+                <li>In Ableton, set a MIDI track input to &ldquo;IAC Driver Bus 1&rdquo;</li>
+              </ol>
+              <p>Click a chord set card, then use keys <kbd>a</kbd><kbd>w</kbd><kbd>s</kbd><kbd>e</kbd><kbd>d</kbd><kbd>f</kbd><kbd>t</kbd><kbd>g</kbd><kbd>y</kbd><kbd>h</kbd><kbd>u</kbd><kbd>j</kbd> to play chords.</p>
+            </div>
+          )}
         </div>
       </div>
 
