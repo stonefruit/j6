@@ -161,8 +161,6 @@
   align-items: center;
   padding: 1rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  cursor: pointer;
-  user-select: none;
 }
 
 .chord-preview {
@@ -207,26 +205,6 @@
   backdrop-filter: blur(10px);
 }
 
-.expand-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.expand-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
 .card-content {
   padding: 1rem;
   background: #fafafa;
@@ -237,11 +215,16 @@
   padding: 0.5rem;
   background: #e8e8e8;
   border: none;
-  border-radius: 6px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
   color: #555;
   font-size: 0.85rem;
   cursor: pointer;
   transition: background 0.2s;
+}
+
+.details-toggle:hover {
+  background: #ddd;
 }
 
 .details-toggle:hover {

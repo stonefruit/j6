@@ -11,7 +11,6 @@ const data: ChordData = chordData as ChordData;
 export default function ChordSets() {
   const [searchNumber, setSearchNumber] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
-
   // Get unique genres
   const genres = useMemo(() => {
     const uniqueGenres = new Set(data.chordSets.map((set) => set.genre));
@@ -127,58 +126,49 @@ export default function ChordSets() {
 }
 
 function ChordSetCard({ chordSet }: { chordSet: ChordSet }) {
-  const [expanded, setExpanded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
   return (
     <div className="chord-set-card">
-      <div className="card-header" onClick={() => setExpanded(!expanded)}>
+      <div className="card-header">
         <div className="card-title">
           <span className="set-number">#{chordSet.number}</span>
           <span className="genre-badge">{chordSet.genre}</span>
         </div>
-        <button
-          className="expand-btn"
-          aria-label={expanded ? "Collapse" : "Expand"}
-        >
-          {expanded ? "−" : "+"}
-        </button>
       </div>
 
-      {expanded && <ChordPreviewKeyboard chords={chordSet.chords} />}
+      <ChordPreviewKeyboard chords={chordSet.chords} />
 
-      {expanded && (
+      <button
+        className="details-toggle"
+        onClick={() => setShowDetails(!showDetails)}
+      >
+        {showDetails ? "Hide Details" : "Show Details"}
+      </button>
+
+      {showDetails && (
         <div className="card-content">
-          <button
-            className="details-toggle"
-            onClick={() => setShowDetails(!showDetails)}
-          >
-            {showDetails ? "Hide Details" : "Show Details"}
-          </button>
-
-          {showDetails && (
-            <div className="chords-list">
-              {chordSet.chords.map((chord, idx) => (
-                <div key={idx} className="chord-item">
-                  <div className="chord-item-top">
-                    <div className="chord-info">
-                      <div className="chord-header">
-                        {chord.key && (
-                          <span className="chord-key">{chord.key}</span>
-                        )}
-                        <span className="chord-name">{chord.name}</span>
-                      </div>
-                      <div className="chord-notes">
-                        {[...chord.notes].reverse().join(" - ")}
-                      </div>
+          <div className="chords-list">
+            {chordSet.chords.map((chord, idx) => (
+              <div key={idx} className="chord-item">
+                <div className="chord-item-top">
+                  <div className="chord-info">
+                    <div className="chord-header">
+                      {chord.key && (
+                        <span className="chord-key">{chord.key}</span>
+                      )}
+                      <span className="chord-name">{chord.name}</span>
                     </div>
-                    <TriggerKey noteIndex={idx} />
+                    <div className="chord-notes">
+                      {[...chord.notes].reverse().join(" - ")}
+                    </div>
                   </div>
-                  <Keyboard notes={chord.notes} />
+                  <TriggerKey noteIndex={idx} />
                 </div>
-              ))}
-            </div>
-          )}
+                <Keyboard notes={chord.notes} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

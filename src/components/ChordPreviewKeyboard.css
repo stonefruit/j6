@@ -4,13 +4,14 @@
   border-bottom: 1px solid #e0e0e0;
   display: flex;
   justify-content: center;
+  overflow: hidden;
 }
 
 .chord-preview-keyboard {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: fit-content;
+  width: 100%;
 }
 
 .preview-keyboard-row {
@@ -19,7 +20,8 @@
 }
 
 .preview-black-keys-row {
-  margin-left: 42px;
+  /* Offset by half a white key + gap to center black keys between white keys */
+  margin-left: calc((100% - 6 * 2px) / 7 / 2 + 2px);
 }
 
 .preview-key {
@@ -32,7 +34,7 @@
 }
 
 .preview-key-label {
-  font-size: 20px;
+  font-size: clamp(11px, 2.5cqi, 20px);
   font-weight: 600;
   line-height: 1;
   user-select: none;
@@ -40,13 +42,13 @@
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
-  padding: 12px 0;
+  padding: 8px 0;
 }
 
 /* Black keys */
 .preview-black-key {
-  width: 56px;
-  height: 160px;
+  flex: 1;
+  height: 130px;
   background-color: #222;
   border: 1px solid #000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -64,8 +66,8 @@
 
 /* White keys */
 .preview-white-key {
-  width: 60px;
-  height: 160px;
+  flex: 1;
+  height: 140px;
   background-color: #fff;
   border: 1px solid #333;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -73,46 +75,4 @@
 
 .preview-white-key .preview-key-label {
   color: #333;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .preview-white-key {
-    width: 50px;
-    height: 130px;
-  }
-
-  .preview-black-key {
-    width: 46px;
-    height: 130px;
-  }
-
-  .preview-black-keys-row {
-    margin-left: 35px;
-  }
-
-  .preview-key-label {
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .preview-white-key {
-    width: 40px;
-    height: 100px;
-  }
-
-  .preview-black-key {
-    width: 36px;
-    height: 100px;
-  }
-
-  .preview-black-keys-row {
-    margin-left: 28px;
-  }
-
-  .preview-key-label {
-    font-size: 13px;
-    padding: 8px 0;
-  }
 }
