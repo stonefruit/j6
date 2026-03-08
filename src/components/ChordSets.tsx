@@ -32,7 +32,17 @@ export default function ChordSets() {
     <div className="chord-sets-container">
       <header className="app-header">
         <h1>J-6 Chord Sets</h1>
-        <p className="subtitle">Browse and explore Roland J-6 chord sets</p>
+        <p className="subtitle">
+          Browse and explore Roland J-6 chord sets
+          {" | "}
+          <a
+            href="https://static.roland.com/manuals/J-6_manual_v102/eng/28645807.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Official Docs
+          </a>
+        </p>
       </header>
 
       <div className="filters">
