@@ -94,8 +94,12 @@ export default function ChordSets() {
     if (!navigator.requestMIDIAccess) return;
     navigator.requestMIDIAccess().then((access) => {
       setMidiAccess(access);
-      setMidiOutputs(getOutputs(access));
-      setMidiInputs(getInputs(access));
+      const outputs = getOutputs(access);
+      const inputs = getInputs(access);
+      setMidiOutputs(outputs);
+      setMidiInputs(inputs);
+      if (outputs.length > 0) setMidiOutputId(outputs[0].id);
+      if (inputs.length > 0) setMidiInputId(inputs[0].id);
       access.onstatechange = () => {
         setMidiOutputs(getOutputs(access));
         setMidiInputs(getInputs(access));
