@@ -191,6 +191,42 @@
   transform: scale(0.98);
 }
 
+/* Now Playing indicator */
+.now-playing {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: 0.85rem;
+}
+
+.now-playing-label {
+  font-weight: 700;
+  color: white;
+}
+
+.now-playing-set {
+  font-weight: 700;
+  color: white;
+}
+
+.now-playing-genre {
+  padding: 0.1rem 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.now-playing-empty {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+
 .results-info {
   margin-bottom: 0.5rem;
   padding: 0.35rem 0.5rem;

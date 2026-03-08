@@ -34,17 +34,23 @@ export default function ChordSets() {
   const [midiInputs, setMidiInputs] = useState<MidiPortInfo[]>([]);
   const [midiOutputId, setMidiOutputId] = useState("");
   const [midiInputId, setMidiInputId] = useState("");
-  const [inputChannel, setInputChannel] = useState(0);
-  const [outputChannel, setOutputChannel] = useState(1);
+  const [inputChannel, setInputChannel] = useState(() => {
+    const saved = localStorage.getItem("j6-input-channel");
+    return saved !== null ? parseInt(saved, 10) : 0;
+  });
+  const [outputChannel, setOutputChannel] = useState(() => {
+    const saved = localStorage.getItem("j6-output-channel");
+    return saved !== null ? parseInt(saved, 10) : 1;
+  });
   const [showMidiHelp, setShowMidiHelp] = useState(false);
 
   const midiOutputRef = useRef<MIDIOutput | null>(null);
   const inputChannelRef = useRef(inputChannel);
   const outputChannelRef = useRef(outputChannel);
 
-  // Keep refs in sync
-  useEffect(() => { inputChannelRef.current = inputChannel; }, [inputChannel]);
-  useEffect(() => { outputChannelRef.current = outputChannel; }, [outputChannel]);
+  // Keep refs and localStorage in sync
+  useEffect(() => { inputChannelRef.current = inputChannel; localStorage.setItem("j6-input-channel", String(inputChannel)); }, [inputChannel]);
+  useEffect(() => { outputChannelRef.current = outputChannel; localStorage.setItem("j6-output-channel", String(outputChannel)); }, [outputChannel]);
 
   // Callback for MIDI input triggering chords on the selected card
   const selectedCardRef = useRef(selectedCard);
@@ -293,6 +299,22 @@ export default function ChordSets() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Now Playing indicator */}
+      <div className="now-playing">
+        {selectedCard !== null ? (() => {
+          const set = data.chordSets.find((s) => s.number === selectedCard);
+          return set ? (
+            <>
+              <span className="now-playing-label">Now Playing</span>
+              <span className="now-playing-set">#{set.number}</span>
+              <span className="now-playing-genre">{set.genre}</span>
+            </>
+          ) : null;
+        })() : (
+          <span className="now-playing-empty">Click a chord set to start playing</span>
+        )}
       </div>
 
       <div className="results-info">
