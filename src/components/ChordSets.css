@@ -59,13 +59,20 @@
 
 .filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   background: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
 }
 
 .filter-group {
@@ -73,7 +80,12 @@
   min-width: 120px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
+}
+
+.filter-group-compact {
+  flex: 0 0 auto;
+  min-width: auto;
 }
 
 .filter-group label {
@@ -516,11 +528,16 @@
   }
 
   .filters {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .filter-group {
     min-width: 100%;
+  }
+
+  .filter-group-compact {
+    min-width: auto;
+    flex: 1;
   }
 
   .clear-btn {

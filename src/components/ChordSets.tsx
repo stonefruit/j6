@@ -193,145 +193,150 @@ export default function ChordSets() {
       </header>
 
       <div className="filters">
-        <div className="filter-group">
-          <label htmlFor="search-number">Chord Set #</label>
-          <input
-            id="search-number"
-            type="number"
-            placeholder="Search by number..."
-            value={searchNumber}
-            onChange={(e) => {
-              setSearchNumber(e.target.value);
-              if (e.target.value) setSelectedGenre("");
-            }}
-            min="1"
-          />
-        </div>
+        <div className="filters-row">
+          <div className="filter-group">
+            <label htmlFor="search-number">Chord Set #</label>
+            <input
+              id="search-number"
+              type="number"
+              placeholder="Search by number..."
+              value={searchNumber}
+              onChange={(e) => {
+                setSearchNumber(e.target.value);
+                if (e.target.value) setSelectedGenre("");
+              }}
+              min="1"
+            />
+          </div>
 
-        <div className="filter-group">
-          <label htmlFor="genre-filter">Genre</label>
-          <select
-            id="genre-filter"
-            value={selectedGenre}
-            onChange={(e) => {
-              setSelectedGenre(e.target.value);
-              if (e.target.value) setSearchNumber("");
-            }}
-          >
-            <option value="">All Genres</option>
-            {genres.map((genre) => (
-              <option key={genre} value={genre}>
-                {genre}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="filter-group">
-          <label htmlFor="midi-input">MIDI Input</label>
-          <div className="midi-row">
+          <div className="filter-group">
+            <label htmlFor="genre-filter">Genre</label>
             <select
-              id="midi-input"
-              value={midiInputId}
-              onChange={(e) => setMidiInputId(e.target.value)}
+              id="genre-filter"
+              value={selectedGenre}
+              onChange={(e) => {
+                setSelectedGenre(e.target.value);
+                if (e.target.value) setSearchNumber("");
+              }}
             >
-              <option value="">
-                {midiAccess ? "None" : "MIDI not available"}
-              </option>
-              {midiInputs.map((inp) => (
-                <option key={inp.id} value={inp.id}>
-                  {inp.name}
+              <option value="">All Genres</option>
+              {genres.map((genre) => (
+                <option key={genre} value={genre}>
+                  {genre}
                 </option>
-              ))}
-            </select>
-            <select
-              className="channel-select"
-              value={inputChannel}
-              onChange={(e) => setInputChannel(parseInt(e.target.value, 10))}
-              title="Input MIDI channel"
-            >
-              {CHANNELS.map((ch) => (
-                <option key={ch} value={ch}>Ch {ch + 1}</option>
               ))}
             </select>
           </div>
         </div>
 
-        <div className="filter-group">
-          <label htmlFor="midi-output">
-            MIDI Output
-            <button
-              className="midi-help-btn"
-              onClick={() => setShowMidiHelp((v) => !v)}
-              title="MIDI setup help"
-            >
-              ?
-            </button>
-          </label>
-          <div className="midi-row">
-            <select
-              id="midi-output"
-              value={midiOutputId}
-              onChange={(e) => setMidiOutputId(e.target.value)}
-            >
-              <option value="">
-                {midiAccess ? "None" : "MIDI not available"}
-              </option>
-              {midiOutputs.map((out) => (
-                <option key={out.id} value={out.id}>
-                  {out.name}
+        <div className="filters-row">
+          <div className="filter-group">
+            <label htmlFor="midi-input">MIDI Input</label>
+            <div className="midi-row">
+              <select
+                id="midi-input"
+                value={midiInputId}
+                onChange={(e) => setMidiInputId(e.target.value)}
+              >
+                <option value="">
+                  {midiAccess ? "None" : "MIDI not available"}
                 </option>
-              ))}
-            </select>
-            <select
-              className="channel-select"
-              value={outputChannel}
-              onChange={(e) => setOutputChannel(parseInt(e.target.value, 10))}
-              title="Output MIDI channel"
-            >
-              {CHANNELS.map((ch) => (
-                <option key={ch} value={ch}>Ch {ch + 1}</option>
-              ))}
-            </select>
-          </div>
-          {showMidiHelp && (
-            <div className="midi-help">
-              <p><strong>macOS setup (IAC Driver):</strong></p>
-              <ol>
-                <li>Open <strong>Audio MIDI Setup</strong> (Spotlight search)</li>
-                <li>Window &rarr; Show MIDI Studio</li>
-                <li>Double-click <strong>IAC Driver</strong></li>
-                <li>Check <strong>Device is online</strong>, click Apply</li>
-                <li>Refresh this page &mdash; select IAC Driver for both input and output</li>
-              </ol>
-              <p><strong>With Ableton:</strong></p>
-              <ol>
-                <li>Set MIDI Input to IAC Driver, choose an input channel (e.g. Ch 1)</li>
-                <li>Set MIDI Output to IAC Driver, choose a different output channel (e.g. Ch 2)</li>
-                <li>In Ableton, send notes on Ch 1 to trigger chords &mdash; chords return on Ch 2</li>
-              </ol>
-              <p><strong>Keyboard:</strong> Click a card, then use <kbd>a</kbd><kbd>w</kbd><kbd>s</kbd><kbd>e</kbd><kbd>d</kbd><kbd>f</kbd><kbd>t</kbd><kbd>g</kbd><kbd>y</kbd><kbd>h</kbd><kbd>u</kbd><kbd>j</kbd> to play chords.</p>
+                {midiInputs.map((inp) => (
+                  <option key={inp.id} value={inp.id}>
+                    {inp.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="channel-select"
+                value={inputChannel}
+                onChange={(e) => setInputChannel(parseInt(e.target.value, 10))}
+                title="Input MIDI channel"
+              >
+                {CHANNELS.map((ch) => (
+                  <option key={ch} value={ch}>Ch {ch + 1}</option>
+                ))}
+              </select>
             </div>
-          )}
-        </div>
+          </div>
 
-        <div className="filter-group">
-          <label>Octave</label>
-          <div className="transpose-control">
-            <button onClick={() => setOctave((v) => Math.max(-3, v - 1))} disabled={octave <= -3}>-</button>
-            <span className="transpose-value">{octave >= 0 ? `+${octave}` : octave}</span>
-            <button onClick={() => setOctave((v) => Math.min(3, v + 1))} disabled={octave >= 3}>+</button>
+          <div className="filter-group">
+            <label htmlFor="midi-output">
+              MIDI Output
+              <button
+                className="midi-help-btn"
+                onClick={() => setShowMidiHelp((v) => !v)}
+                title="MIDI setup help"
+              >
+                ?
+              </button>
+            </label>
+            <div className="midi-row">
+              <select
+                id="midi-output"
+                value={midiOutputId}
+                onChange={(e) => setMidiOutputId(e.target.value)}
+              >
+                <option value="">
+                  {midiAccess ? "None" : "MIDI not available"}
+                </option>
+                {midiOutputs.map((out) => (
+                  <option key={out.id} value={out.id}>
+                    {out.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="channel-select"
+                value={outputChannel}
+                onChange={(e) => setOutputChannel(parseInt(e.target.value, 10))}
+                title="Output MIDI channel"
+              >
+                {CHANNELS.map((ch) => (
+                  <option key={ch} value={ch}>Ch {ch + 1}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="filter-group filter-group-compact">
+            <label>Octave</label>
+            <div className="transpose-control">
+              <button onClick={() => setOctave((v) => Math.max(-3, v - 1))} disabled={octave <= -3}>-</button>
+              <span className="transpose-value">{octave >= 0 ? `+${octave}` : octave}</span>
+              <button onClick={() => setOctave((v) => Math.min(3, v + 1))} disabled={octave >= 3}>+</button>
+            </div>
+          </div>
+
+          <div className="filter-group filter-group-compact">
+            <label>Transpose ({NOTE_NAMES_FROM_C[((totalTranspose % 12) + 12) % 12]})</label>
+            <div className="transpose-control">
+              <button onClick={() => setTranspose((v) => Math.max(-11, v - 1))} disabled={transpose <= -11}>-</button>
+              <span className="transpose-value">{transpose >= 0 ? `+${transpose}` : transpose}</span>
+              <button onClick={() => setTranspose((v) => Math.min(11, v + 1))} disabled={transpose >= 11}>+</button>
+            </div>
           </div>
         </div>
 
-        <div className="filter-group">
-          <label>Transpose ({NOTE_NAMES_FROM_C[((totalTranspose % 12) + 12) % 12]})</label>
-          <div className="transpose-control">
-            <button onClick={() => setTranspose((v) => Math.max(-11, v - 1))} disabled={transpose <= -11}>-</button>
-            <span className="transpose-value">{transpose >= 0 ? `+${transpose}` : transpose}</span>
-            <button onClick={() => setTranspose((v) => Math.min(11, v + 1))} disabled={transpose >= 11}>+</button>
+        {showMidiHelp && (
+          <div className="midi-help">
+            <p><strong>macOS setup (IAC Driver):</strong></p>
+            <ol>
+              <li>Open <strong>Audio MIDI Setup</strong> (Spotlight search)</li>
+              <li>Window &rarr; Show MIDI Studio</li>
+              <li>Double-click <strong>IAC Driver</strong></li>
+              <li>Check <strong>Device is online</strong>, click Apply</li>
+              <li>Refresh this page &mdash; select IAC Driver for both input and output</li>
+            </ol>
+            <p><strong>With Ableton:</strong></p>
+            <ol>
+              <li>Set MIDI Input to IAC Driver, choose an input channel (e.g. Ch 1)</li>
+              <li>Set MIDI Output to IAC Driver, choose a different output channel (e.g. Ch 2)</li>
+              <li>In Ableton, send notes on Ch 1 to trigger chords &mdash; chords return on Ch 2</li>
+            </ol>
+            <p><strong>Keyboard:</strong> Click a card, then use <kbd>a</kbd><kbd>w</kbd><kbd>s</kbd><kbd>e</kbd><kbd>d</kbd><kbd>f</kbd><kbd>t</kbd><kbd>g</kbd><kbd>y</kbd><kbd>h</kbd><kbd>u</kbd><kbd>j</kbd> to play chords.</p>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Now Playing indicator */}
